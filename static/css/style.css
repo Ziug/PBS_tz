@@ -1,0 +1,10 @@
+body{font-family:system-ui;max-width:1100px;margin:20px auto;padding:0 16px}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ddd;padding:6px;font-size:14px}
+th a{color:#000;text-decoration:none}
+.ok{background:#e6ffe6;padding:8px;margin:8px 0;border:1px solid #8f8}
+.err{background:#ffe6e6;padding:8px;margin:8px 0;border:1px solid #f88}
+.warn{color:#996600;font-size:12px}
+label{display:block;margin:6px 0}
+input{padding:4px;width:280px}
+button{padding:6px 12px;margin-top:8px}

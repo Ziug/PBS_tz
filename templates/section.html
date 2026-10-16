@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><title>{{cfg.title}}</title>
+<link rel="stylesheet" href="/static/css/style.css"></head><body>
+<h1>{{cfg.title}}</h1>
+<p><a href="/">← Назад</a> | <a href="/{{sec}}/new">+ Новая запись</a></p>
+{% if request.query_params.get('msg') %}<div class="ok">Сохранено</div>{% endif %}
+<form method="get" action="/{{sec}}">
+  <input name="q" value="{{q}}" placeholder="Поиск">
+  <button>Найти</button>
+</form>
+<table>
+  <thead><tr>
+    {% for f in cfg.fields %}<th><a href="/{{sec}}?sort={{f}}&dir={% if sort==f and dir=='asc' %}desc{% else %}asc{% endif %}">{{f}}</a></th>{% endfor %}
+    <th>Предупреждения</th><th>Действия</th>
+  </tr></thead>
+  <tbody>
+  {% for r in rows %}
+  <tr>
+    {% for f in cfg.fields %}<td>{{ getattr(r,f) }}</td>{% endfor %}
+    <td class="warn">{% for w in issues.get(r.record_id, []) %}{{w}}; {% endfor %}</td>
+    <td><a href="/{{sec}}/{{r.id}}/edit">Редактировать</a></td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</body></html>

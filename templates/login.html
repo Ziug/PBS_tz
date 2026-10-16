@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Вход</title>
+<link rel="stylesheet" href="/static/css/style.css"></head><body>
+<h1>Вход в PBS</h1>
+<form method="post" action="/login">
+  <select name="user">
+    <option value="__ceo__">Владимир Мошкин</option>
+    {% for n in names %}<option value="{{n}}">{{n}}</option>{% endfor %}
+  </select>
+  <button>Войти</button>
+</form>
+</body></html>

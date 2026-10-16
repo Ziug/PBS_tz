@@ -1,0 +1,22 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Форма</title>
+<link rel="stylesheet" href="/static/css/style.css"></head><body>
+<h1>{{cfg.title}} — {% if row %}редактирование{% else %}новая запись{% endif %}</h1>
+{% if errors %}<div class="err">{% for e in errors %}<div>{{e}}</div>{% endfor %}</div>{% endif %}
+<form method="post">
+  {% for f in cfg.fields %}
+  {% if f == "employee" and not is_ceo %}
+    <!-- employee auto-filled server-side -->
+  {% else %}
+  <label>{{f}}<br>
+    {% if f == "date" %}
+      <input type="date" name="{{f}}" value="{% if data and data.get(f) %}{{data.get(f)}}{% elif row %}{{getattr(row,f)}}{% elif defaults.get(f) %}{{defaults.get(f)}}{% endif %}">
+    {% else %}
+      <input name="{{f}}" value="{% if data and data.get(f) is not none %}{{data.get(f)}}{% elif row %}{{getattr(row,f)}}{% elif defaults.get(f) %}{{defaults.get(f)}}{% endif %}">
+    {% endif %}
+  </label><br>
+  {% endif %}
+  {% endfor %}
+  <button>Сохранить</button>
+  <a href="/{{sec}}">Отмена</a>
+</form>
+</body></html>

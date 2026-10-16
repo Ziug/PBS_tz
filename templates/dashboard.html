@@ -1,0 +1,65 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Панель директора</title>
+<link rel="stylesheet" href="/static/css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head><body>
+<h1>Панель генерального директора</h1>
+<p><a href="/">← Главная</a></p>
+
+<form method="get" action="/ceo">
+  <label>С даты: <input type="date" name="start" value="{{start}}"></label>
+  <label>По дату: <input type="date" name="end" value="{{end}}"></label>
+  <button>Применить</button>
+</form>
+<p><a class="btn" href="/export?start={{start}}&end={{end}}">Скачать отчёт (CSV)</a> <a class="btn" href="/export.xlsx?start={{start}}&end={{end}}">Скачать Excel</a></p>
+
+<h2>Сводка по участкам</h2>
+<table>
+  <thead><tr><th>Участок</th><th>Записей</th><th>План</th><th>Факт</th><th>Выполнение</th><th>Проблемных</th></tr></thead>
+  <tbody>
+    <tr><td>Заготовка</td><td>{{prep_total}}</td><td>{{prep_plan}}</td><td>{{prep_fact}} (по {{prep_fact_count}} записям)</td>
+      <td>{% if prep_completion is none %}н/д{% else %}{{"%.1f"|format(prep_completion*100)}}%{% endif %}{% if prep_partial %} (частичный){% endif %}</td>
+      <td>{{prep_issues}}</td></tr>
+    <tr><td>Потребность сварки</td><td>{{weld_total}}</td><td>—</td><td>потребность: {{weld_need}}</td><td>—</td><td>{{weld_issues}}</td></tr>
+    <tr><td>Документация</td><td>{{doc_total}}</td><td>{{doc_plan}}</td><td>{{doc_fact}}</td>
+      <td>{% if doc_completion is none %}н/д{% else %}{{"%.1f"|format(doc_completion*100)}}%{% endif %}</td>
+      <td>{{doc_issues}}</td></tr>
+  </tbody>
+</table>
+
+{% if prep_issues or weld_issues or doc_issues %}
+<div class="warn">Есть записи с подозрительными значениями. Показатели помечены как частичные/требующие проверки.</div>
+{% endif %}
+{% if prep_partial %}
+<div class="warn">Заготовка: факт рассчитан только по записям с заполненным фактом ({{prep_fact_count}} из {{prep_total}}). Отсутствующие значения не заменены нулями.</div>
+{% endif %}
+
+<h2>Динамика заготовки</h2>
+<canvas id="prepChart" height="120"></canvas>
+<h2>Динамика документации</h2>
+<canvas id="docChart" height="120"></canvas>
+
+<h2>Заготовка</h2>
+<p><a href="/prep?sort=date&dir=desc">Открыть все записи заготовки</a></p>
+<h2>Потребность сварки</h2>
+<p><a href="/weld">Открыть записи</a></p>
+<h2>Документация</h2>
+<p><a href="/documents">Открыть записи</a></p>
+
+<script>
+const prepLabels={{chart_labels|safe}};
+const prepPlan={{chart_plan|safe}};
+const prepFact={{chart_fact|safe}};
+new Chart(document.getElementById('prepChart'), {type:'bar', data:{labels:prepLabels, datasets:[
+ {label:'План',data:prepPlan},{label:'Факт',data:prepFact}]}});
+
+const docLabels={{doc_labels|safe}};
+const docPlan={{doc_plan_arr|safe}};
+const docFact={{doc_fact_arr|safe}};
+new Chart(document.getElementById('docChart'), {type:'bar', data:{labels:docLabels, datasets:[
+ {label:'План',data:docPlan},{label:'Факт',data:docFact}]}});
+
+// states
+if (prepLabels.length===0) { document.getElementById('prepChart').outerHTML='<p>Нет данных за период</p>'; }
+if (docLabels.length===0) { document.getElementById('docChart').outerHTML='<p>Нет данных за период</p>'; }
+</script>
+</body></html>

@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+pbs.db
+*.xlsx?
+# keep source xlsx? user may want upload; but db heavy. We'll ignore db only.
+*.log
+.env
