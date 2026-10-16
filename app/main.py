@@ -89,7 +89,7 @@ def login_page(request: Request):
         for r in s.query(DocRun).all():
             if r.employee: names.add(r.employee)
         names = sorted(names)
-        return templates.TemplateResponse("login.html", {"request": request, "names": names})
+        return templates.TemplateResponse(request, "login.html", {"names": names})
     finally:
         s.close()
 
@@ -112,7 +112,7 @@ def logout(request: Request):
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html", {})
 
 def get_issues_map(sec):
     table = {"prep": "prep_runs", "weld": "weld_needs", "documents": "docs_runs"}[sec]
@@ -137,7 +137,7 @@ def list_sec(request: Request, sec: str, q: str = "", sort: str = "id", dir: str
     if sec not in SECTIONS:
         raise HTTPException(404)
     if sec == "weld" and not is_ceo(request):
-        return templates.TemplateResponse("no_access.html", {"request": request}, status_code=403)
+        return templates.TemplateResponse(request, "no_access.html", {"request": request}, status_code=403)
     cfg = SECTIONS[sec]
     M = cfg["model"]
     s = db()
@@ -158,7 +158,7 @@ def list_sec(request: Request, sec: str, q: str = "", sort: str = "id", dir: str
         except Exception:
             pass
         issues = get_issues_map(sec)
-        return templates.TemplateResponse("section.html", {"request": request, "sec": sec, "cfg": cfg,
+        return templates.TemplateResponse(request, "section.html", {"sec": sec, "cfg": cfg,
                                                           "rows": rows, "issues": issues, "q": q, "sort": sort, "dir": dir})
     finally:
         s.close()
@@ -175,7 +175,7 @@ def new_form(request: Request, sec: str):
     if "employee" in cfg["fields"] and not is_ceo(request):
         # hide employee but still set server-side later
         pass
-    return templates.TemplateResponse("form.html", {"request": request, "sec": sec, "cfg": cfg, "row": None,
+    return templates.TemplateResponse(request, "form.html", {"sec": sec, "cfg": cfg, "row": None,
                                                   "errors": [], "defaults": defaults, "is_ceo": is_ceo(request)})
 
 def validate(sec, fields, data):
@@ -223,7 +223,7 @@ async def create_async(request: Request, sec: str):
         pass
     errors = validate(sec, fields, data)
     if errors:
-        return templates.TemplateResponse("form.html", {"request": request, "sec": sec, "cfg": cfg, "row": None, "errors": errors, "defaults": {}, "is_ceo": is_ceo(request), "data": data}, status_code=400)
+        return templates.TemplateResponse(request, "form.html", {"sec": sec, "cfg": cfg, "row": None, "errors": errors, "defaults": {}, "is_ceo": is_ceo(request), "data": data}, status_code=400)
     s = db()
     try:
         row = M()
@@ -243,7 +243,7 @@ async def create_async(request: Request, sec: str):
         return RedirectResponse(f"/{sec}?msg=created", status_code=303)
     except Exception as e:
         s.rollback()
-        return templates.TemplateResponse("form.html", {"request": request, "sec": sec, "cfg": cfg, "row": None, "errors": [str(e)]}, status_code=400)
+        return templates.TemplateResponse(request, "form.html", {"sec": sec, "cfg": cfg, "row": None, "errors": [str(e)]}, status_code=400)
     finally:
         s.close()
 
@@ -260,7 +260,7 @@ def edit_form(request: Request, sec: str, rid: int):
             raise HTTPException(404)
         if (not is_ceo(request)) and hasattr(row, "employee") and row.employee != current_user(request):
             raise HTTPException(403)
-        return templates.TemplateResponse("form.html", {"request": request, "sec": sec, "cfg": cfg, "row": row, "errors": [], "defaults": {}, "is_ceo": is_ceo(request)})
+        return templates.TemplateResponse(request, "form.html", {"sec": sec, "cfg": cfg, "row": row, "errors": [], "defaults": {}, "is_ceo": is_ceo(request)})
     finally:
         s.close()
 
@@ -281,7 +281,7 @@ async def update(request: Request, sec: str, rid: int):
             raise HTTPException(403)
         errors = validate(sec, fields, data)
         if errors:
-            return templates.TemplateResponse("form.html", {"request": request, "sec": sec, "cfg": cfg, "row": row, "errors": errors, "defaults": {}, "is_ceo": is_ceo(request), "data": data}, status_code=400)
+            return templates.TemplateResponse(request, "form.html", {"sec": sec, "cfg": cfg, "row": row, "errors": errors, "defaults": {}, "is_ceo": is_ceo(request), "data": data}, status_code=400)
         apply_fields(row, fields, data, sec)
         if (not is_ceo(request)) and "employee" in fields:
             row.employee = current_user(request)
@@ -292,7 +292,7 @@ async def update(request: Request, sec: str, rid: int):
         return RedirectResponse(f"/{sec}?msg=saved", status_code=303)
     except Exception as e:
         s.rollback()
-        return templates.TemplateResponse("form.html", {"request": request, "sec": sec, "cfg": cfg, "row": row, "errors": [str(e)], "defaults": {}, "is_ceo": is_ceo(request)}, status_code=400)
+        return templates.TemplateResponse(request, "form.html", {"sec": sec, "cfg": cfg, "row": row, "errors": [str(e)], "defaults": {}, "is_ceo": is_ceo(request)}, status_code=400)
     finally:
         s.close()
 
@@ -372,7 +372,7 @@ def dashboard(request: Request, start: str = "", end: str = ""):
             "doc_plan_arr": json.dumps(doc_plan_arr),
             "doc_fact_arr": json.dumps(doc_fact_arr),
         }
-        return templates.TemplateResponse("dashboard.html", ctx)
+        return templates.TemplateResponse(request, "dashboard.html", ctx)
     finally:
         s.close()
 
